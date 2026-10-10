@@ -1,1 +1,264 @@
 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2K Verify Center</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f1f5f9;
+padding:18px;margin:0;color:#172033}
+main{max-width:500px;margin:20px auto;background:white;
+padding:22px;border-radius:16px}
+h1{text-align:center;color:#166534}
+button{background:#15803d;color:white;border:0;
+padding:12px;border-radius:8px;width:100%;margin:8px 0}
+input{box-sizing:border-box;width:100%;padding:12px;
+margin:8px 0;border:1px solid #bbb;border-radius:8px}
+section{border:1px solid #ddd;padding:14px;
+border-radius:12px;margin:14px 0}
+.note{background:#fff7ed;padding:12px;border-radius:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>2K Verify Center</h1>
+<p>PDF, URL এবং API সেটআপের অপশন</p>
+
+<section>
+<h3>১. PDF ও URL</h3>
+<input id="url" type="url" placeholder="যাচাই করার URL দিন">
+<button onclick="checkURL()">URL খুলুন</button>
+</section>
+
+<section>
+<h3>২. PDF আপলোড</h3>
+<input id="pdf" type="file" accept=".pdf,application/pdf">
+<button onclick="checkPDF()">PDF নির্বাচন যাচাই</button>
+</section>
+
+<section>
+<h3>৩. Facebook / WhatsApp API</h3>
+<p>অফিসিয়াল API সেটআপের জন্য Meta Developers ব্যবহার করুন।</p>
+<button onclick="window.open(
+'https://developers.facebook.com/','_blank')">
+Meta Developers খুলুন
+</button>
+</section>
+
+<p id="result" class="note">
+এখানে আপনার কাজের অবস্থা দেখাবে।
+</p>
+</main>
+
+<script>
+function checkURL(){
+ const input=document.getElementById('url').value.trim();
+ try{
+  const u=new URL(input);
+  if(u.protocol!=='https:'){
+   throw new Error();
+  }
+  window.open(u.href,'_blank','noopener');
+  document.getElementById('result').textContent=
+  'URL খোলা হয়েছে। আসল Verify ফলাফল আলাদাভাবে নিশ্চিত করতে হবে।';
+ }catch(e){
+  document.getElementById('result').textContent=
+  'সঠিক HTTPS URL দিন।';
+ }
+}
+function checkPDF(){
+ const f=document.getElementById('pdf').files[0];
+ const r=document.getElementById('result');
+ if(!f){
+  r.textContent='আগে একটি PDF নির্বাচন করুন।';
+  return;
+ }
+ if(f.type!=='application/pdf' &&
+    !f.name.toLowerCase().endsWith('.pdf')){
+  r.textContent='সঠিক PDF ফাইল নির্বাচন করুন।';
+  return;
+ }
+ r.textContent='PDF নির্বাচন হয়েছে: '+f.name+
+ '. এটি শুধু ফাইল নির্বাচন পরীক্ষা করে, সত্যতা Verify করে না।';
+}
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f1f5f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px #0002;
+    }
+    h2 { color: #166534; }
+    #reader { width: 100%; margin: 20px auto; }
+    #result {
+      padding: 12px;
+      overflow-wrap: anywhere;
+      background: #dcfce7;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 20px;
+      background: #15803d;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>QR Code Scanner</h2>
+    <p>স্ক্যান করতে নিচের বাটনে চাপ দিন।</p>
+    <button onclick="startScanner()">স্ক্যান শুরু করুন</button>
+    <div id="reader"></div>
+    <h3>স্ক্যানের ফলাফল</h3>
+    <p id="result">এখনো কিছু স্ক্যান করা হয়নি।</p>
+  </div>
+
+  <script>
+    let scanner;
+
+    async function startScanner() {
+      const result = document.getElementById("result");
+
+      try {
+        if (!scanner) {
+          scanner = new Html5Qrcode("reader");
+        }
+
+        const cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras.length) {
+          result.textContent = "কোনো ক্যামেরা পাওয়া যায়নি।";
+          return;
+        }
+
+        const camera = cameras.find(c =>
+          /back|rear|environment/i.test(c.label)
+        ) || cameras[0];
+
+        await scanner.start(
+          camera.id,
+          { fps: 10, qrbox: { width: 230, height: 230 } },
+          decodedText => {
+            result.textContent = decodedText;
+            scanner.stop().catch(() => {});
+          },
+          () => {}
+        );
+      } catch (error) {
+        result.textContent =
+          "ক্যামেরা চালু হয়নি। অনুমতি দিন এবং HTTPS লিংক ব্যবহার করুন।";
+      }
+    }
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f1f5f9;
+      padding: 20px;
+    }
+    .container {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px #0002;
+    }
+    h2 { color: #166534; }
+    #reader { width: 100%; margin: 20px auto; }
+    #result {
+      padding: 12px;
+      overflow-wrap: anywhere;
+      background: #dcfce7;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 20px;
+      background: #15803d;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>QR Code Scanner</h2>
+    <p>স্ক্যান করতে নিচের বাটনে চাপ দিন।</p>
+    <button onclick="startScanner()">স্ক্যান শুরু করুন</button>
+    <div id="reader"></div>
+    <h3>স্ক্যানের ফলাফল</h3>
+    <p id="result">এখনো কিছু স্ক্যান করা হয়নি।</p>
+  </div>
+
+  <script>
+    let scanner;
+
+    async function startScanner() {
+      const result = document.getElementById("result");
+
+      try {
+        if (!scanner) {
+          scanner = new Html5Qrcode("reader");
+        }
+
+        const cameras = await Html5Qrcode.getCameras();
+
+        if (!cameras.length) {
+          result.textContent = "কোনো ক্যামেরা পাওয়া যায়নি।";
+          return;
+        }
+
+        const camera = cameras.find(c =>
+          /back|rear|environment/i.test(c.label)
+        ) || cameras[0];
+
+        await scanner.start(
+          camera.id,
+          { fps: 10, qrbox: { width: 230, height: 230 } },
+          decodedText => {
+            result.textContent = decodedText;
+            scanner.stop().catch(() => {});
+          },
+          () => {}
+        );
+      } catch (error) {
+        result.textContent =
+          "ক্যামেরা চালু হয়নি। অনুমতি দিন এবং HTTPS লিংক ব্যবহার করুন।";
+      }
+    }
+  </script>
+</body>
+</html>
